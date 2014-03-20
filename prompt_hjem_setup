@@ -9,29 +9,35 @@ prompt_hjem_setup () {
     local blue_cp="%{$fg[blue]%}]%{$reset_color%}"
     local path_p="${blue_op}%~${blue_cp}"
     local user_host="${blue_op}%n@%m${blue_cp}"
-    local ret_status="${blue_op}%?${blue_cp}"
-    #local hist_no="${blue_op}%h${blue_cp}"
     local smiley="%(?,%{$fg[green]%}:%)%{$reset_color%},%{$fg[red]%}:(%{$reset_color%})"
-    prompt_1a="╭─${path_p}─${ret_status}"
+    prompt_1a="╭─${path_p}"
     prompt_1b="${user_host}"
     prompt_2="╰─${blue_op}${smiley}${blue_cp} %# "
-    local cur_cmd="${blue_op}%_${blue_cp}"
-    #PROMPT="╭─${path_p}─${user_host}─${ret_status}─${hist_no}
-    #╰─${blue_op}${smiley}${blue_cp} %# "
-    #prompt_2="${cur_cmd}> "
+    local cur_cmd="${blue_op}%_${blue_cp}" 
+    PROMPT2=" ─${cur_cmd}> "
 
     prompt_opts=(cr subst percent)
     add-zsh-hook precmd prompt_hjem_precmd
 }
 
 prompt_hjem_precmd () {
+    local return_val=$?
+    PROMPT=''
+    RPROMPT=''
+
     local term_width=$((COLUMNS - 1))
     local prompt_1a_width=${#${(S%%)prompt_1a//(\%([KF1]|)\{*\}|\%[Bbkf])}}
     local prompt_1b_width=${#${(S%%)prompt_1b//(\%([KF1]|)\{*\}|\%[Bbkf])}}
     local prompt_padding_size=$((term_width - prompt_1a_width - prompt_1b_width))
     [[ prompt_padding_size > 0 ]] && padding=$(printf '─%.0s' {1..$prompt_padding_size}) || padding="" 
+
     PROMPT=$prompt_1a$padding$prompt_1b'
 '$prompt_2
+
+    # show return value
+    if [ $return_val -gt 0 ]; then
+        RPROMPT='%{$fg[blue]%}'$return_val'%{$reset_color%}'
+    fi
 
     # show git repo in RPROMPT
     if [ -d .git ]; then
@@ -47,11 +53,10 @@ prompt_hjem_precmd () {
         [ -n "$(echo $git_status | head -n 2 | tail -n 1 | grep '^Your branch is behind')" ] && git_stat=$git_stat'<'
         # diverged repos
         [ -n "$(echo $git_status | head -n 2 | tail -n 1 | grep 'have diverged,$')" ] && git_stat=$git_stat'><'
-
-        RPROMPT='%F{red}(git'$git_stat
-        RPROMPT=$RPROMPT' '`git symbolic-ref HEAD 2> /dev/null | cut -b 12-`')'
-    else
-        RPROMPT=''
+        # put to prompt
+        [ -z "$git_stat" ] && git_color="green" || git_color="red"
+        local git_repo=$(git symbolic-ref HEAD 2> /dev/null | cut -b 12-)
+        RPROMPT=$RPROMPT' %{$fg[$git_color]%}(git'$git_stat' '$git_repo')%{$reset_color%}'
     fi;
 
     # send a visual bell
