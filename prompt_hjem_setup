@@ -1,66 +1,168 @@
 prompt_hjem_help () {
   cat <<'EOF'
-hjem
+hjem [home is where my prompt is]
+    usage: prompt hjem [8bit] [vimode] [<color1> [<color2> [<color3> [<color4> [<color5]]]]]
+
+        8bit: use 8bit chars
+        vimode: show vi mode
+
+        color1: hyphens (default: green)
+        color2: brackets (default: blue)
+        color3: working directory (default: yellow)
+        color4: user@host (default: cyan)
+        color5: user input (default: white)
 EOF
 }
 
-prompt_hjem_setup () {
-    local blue_op="%{$fg[blue]%}[%{$reset_color%}"
-    local blue_cp="%{$fg[blue]%}]%{$reset_color%}"
-    local path_p="${blue_op}%~${blue_cp}"
-    local user_host="${blue_op}%n@%m${blue_cp}"
-    local smiley="%(?,%{$fg[green]%}:%)%{$reset_color%},%{$fg[red]%}:(%{$reset_color%})"
-    prompt_1a="╭─${path_p}"
-    prompt_1b="${user_host}"
-    prompt_2="╰─${blue_op}${smiley}${blue_cp} %# "
-    local cur_cmd="${blue_op}%_${blue_cp}" 
-    PROMPT2=" ─${cur_cmd}> "
+function prompt_hjem_setup {
+    if [[ $1 == '8bit' ]]; then
+        shift
+        prompt_hjem_hyphen='─'
+        prompt_hjem_lc1='╭'
+        prompt_hjem_lc2='╰'
+    else
+        prompt_hjem_hyphen='-'
+        prompt_hjem_lc1=','
+        prompt_hjem_lc2='\`'
+    fi
+
+    if [[ $1 == 'vimode' ]]; then
+        shift
+        prompt_hjem_vimode=1
+        zle -N zle-keymap-select
+    else
+        prompt_hjem_vimode=0
+    fi
+
+    prompt_hjem_color1=${1:-'green'}                            # hyphens
+    prompt_hjem_color2=${2:-'blue'}                             # brackets
+    prompt_hjem_color3=${3:-'yellow'}                           # working directory
+    prompt_hjem_color4=${4:-${${SSH_CLIENT+'yellow'}:-'cyan'}}  # user@host
+    prompt_hjem_color5=${5:-'white'}                            # user input
+
+    prompt_hjem_chyphen="%F{$prompt_hjem_color1}${prompt_hjem_hyphen}%{$reset_color%}"
+    prompt_hjem_clc1="%B%F{$prompt_hjem_color1}${prompt_hjem_lc1}%{$reset_color%}"
+    prompt_hjem_clc2="%B%F{$prompt_hjem_color1}${prompt_hjem_lc2}%{$reset_color%}"
+    prompt_hjem_cop="%F{$prompt_hjem_color2}[%{$reset_color%}"
+    prompt_hjem_ccp="%F{$prompt_hjem_color2}]%{$reset_color%}"
+
+    local path_p="${prompt_hjem_cop}%B%F{$prompt_hjem_color3}%~%{$reset_color%}${prompt_hjem_ccp}"
+    local user_host="${prompt_hjem_cop}%F{$prompt_hjem_color4}%n%B@%b%F{$prompt_hjem_color4}%m%{$reset_color%}${prompt_hjem_ccp}"
+    local smiley="${prompt_hjem_cop}%(?,%F{green}:%)%{$reset_color%},%F{red}:(%{$reset_color%})${prompt_hjem_ccp}"
+    local cur_cmd="${prompt_hjem_cop}%_${prompt_hjem_ccp}" 
+
+    prompt_hjem_1a="${prompt_hjem_clc1}${prompt_hjem_chyphen}${path_p}"
+    prompt_hjem_1b="${user_host}"
+    prompt_hjem_2="${prompt_hjem_clc2}${prompt_hjem_chyphen}${smiley} %# "
+    PROMPT2=" ${prompt_hjem_chyphen}${cur_cmd}> "
 
     prompt_opts=(cr subst percent)
     add-zsh-hook precmd prompt_hjem_precmd
 }
 
-prompt_hjem_precmd () {
-    local return_val=$?
-    PROMPT=''
-    RPROMPT=''
-
+function prompt_hjem_construct {
+    # calculate width
     local term_width=$((COLUMNS - 1))
-    local prompt_1a_width=${#${(S%%)prompt_1a//(\%([KF1]|)\{*\}|\%[Bbkf])}}
-    local prompt_1b_width=${#${(S%%)prompt_1b//(\%([KF1]|)\{*\}|\%[Bbkf])}}
-    local prompt_padding_size=$((term_width - prompt_1a_width - prompt_1b_width))
-    [[ prompt_padding_size > 0 ]] && padding=$(printf '─%.0s' {1..$prompt_padding_size}) || padding="" 
+    local prompt_1a_width=${#${(S%%)prompt_hjem_1a//(\%([KF1]|)\{*\}|\%[Bbkf])}}
+    local prompt_1b_width=${#${(S%%)prompt_hjem_1b//(\%([KF1]|)\{*\}|\%[Bbkf])}}
 
-    PROMPT=$prompt_1a$padding$prompt_1b'
-'$prompt_2
+    function setup_prompt {
+        padding=$(printf "${prompt_hjem_hyphen}%.0s" {1..$2})
+        PROMPT="$1%F{$prompt_hjem_color1}$padding%{$reset_color%}$3${prompt_newline}$prompt_hjem_2"
+    }
 
-    # show return value
-    if [ $return_val -gt 0 ]; then
-        RPROMPT='%{$fg[blue]%}'$return_val'%{$reset_color%}'
+    # add padding and check width
+    local padding_size=$((term_width - prompt_1a_width - prompt_1b_width))
+    if [[ $padding_size > 0 ]]; then
+        setup_prompt $prompt_hjem_1a $padding_size $prompt_hjem_1b
+        return
     fi
+
+    # try without user@host
+    padding_size=$((term_width - prompt_1a_width))
+    if [[ $padding_size > 0 ]]; then
+        setup_prompt $prompt_hjem_1a $padding_size
+        return
+    fi
+
+    # still to wide? truncate path...
+    local prompt_pwd_size=$((term_width - 5))
+    setup_prompt "$prompt_pwd_size${prompt_hjem_clc1}${prompt_hjem_chyphen}${prompt_hjem_cop}%B%F{$prompt_hjem_color3}%$prompt_pwd_size<...<%~%<<%{$reset_color%}${prompt_hjem_ccp}" 1
+}
+
+function prompt_hjem_construct_r {
+    RPROMPT=""
 
     # show git repo in RPROMPT
     if [ -d .git ]; then
-        git_status=`git status`
-        git_stat=''
+        git_status=`git status 2> /dev/null`
+        git_status_p=`git status --porcelain 2>/dev/null`
+        git_stat=""
         # unstaged/untracked files
-        [ $(git status --porcelain 2>/dev/null| grep -E "^ M|^\?\?" | wc -l) != 0 ] && git_stat=$git_stat'?'
+        [ $(echo $git_status_p | grep -E "^ M|^\?\?" | wc -l) != 0 ] && git_stat="${git_stat}?"
         # added/staged files
-        [ $(git status --porcelain 2>/dev/null| grep -E "^A|^M" | wc -l) != 0 ] && git_stat=$git_stat'!'
+        [ $(echo $git_status_p | grep -E "^A|^M" | wc -l) != 0 ] && git_stat="${git_stat}!"
         # commits to push
-        [ -n "$(echo $git_status | head -n 2 | tail -n 1 | grep '^Your branch is ahead')" ] && git_stat=$git_stat'>'
+        [ -n "$(echo $git_status | head -n 2 | tail -n 1 | grep '^Your branch is ahead')" ] && git_stat="${git_stat}>"
         # commits to pull
-        [ -n "$(echo $git_status | head -n 2 | tail -n 1 | grep '^Your branch is behind')" ] && git_stat=$git_stat'<'
+        [ -n "$(echo $git_status | head -n 2 | tail -n 1 | grep '^Your branch is behind')" ] && git_stat="${git_stat}<"
         # diverged repos
-        [ -n "$(echo $git_status | head -n 2 | tail -n 1 | grep 'have diverged,$')" ] && git_stat=$git_stat'><'
+        [ -n "$(echo $git_status | head -n 2 | tail -n 1 | grep 'have diverged,$')" ] && git_stat="${git_stat}><"
         # put to prompt
         [ -z "$git_stat" ] && git_color="green" || git_color="red"
         local git_repo=$(git symbolic-ref HEAD 2> /dev/null | cut -b 12-)
-        RPROMPT=$RPROMPT' %{$fg[$git_color]%}(git'$git_stat' '$git_repo')%{$reset_color%}'
+        RPROMPT="$RPROMPT%F{$git_color}[git${git_stat}:${git_repo}]%{$reset_color%}"
     fi;
 
+    # add VIMODE to RPROMPT
+    [[ $prompt_hjem_vimode == 1 ]] && RPROMPT="$RPROMPT%F{$prompt_hjem_color2}$VIMODE%{$reset_color%}"
+}
+
+function prompt_hjem_precmd {
+    # register for TRAPWINCH signal
+    functions[TRAPWINCH]="${functions[TRAPWINCH]//prompt_hjem_winch} prompt_hjem_winch"
+
+    # init vi mode
+    VIMODE="[i]"
+
+    # construct prompt
+    prompt_hjem_construct
+    prompt_hjem_construct_r
+
     # send a visual bell
-    echo -ne '\a'
+    echo -ne "\a"
+
+    # set fg color
+    zle_highlight[(r)default:*]="default:fg=$prompt_hjem_color5,bold"
+}
+
+# update vimode on keymap change
+function zle-keymap-select {
+    # only update if still using our precmd,
+    # otherwise remove keymap binding
+    if [[ $precmd_functions = *prompt_hjem_precmd* ]]; then
+        VIMODE="${${KEYMAP/vicmd/[n]}/(main|viins)/[i]}"
+        if [ $prompt_hjem_vimode == 1 ]; then
+            prompt_hjem_construct
+            prompt_hjem_construct_r
+            zle && zle reset-prompt
+        fi
+    else
+        zle -N zle-keymap-select
+    fi
+}
+
+# reload prompt on window resize
+function prompt_hjem_winch {
+    # only update if still using our precmd,
+    # otherwise delete ourself from TRAPWINCH
+    if [[ $precmd_functions = *prompt_hjem_precmd* ]]; then
+        prompt_hjem_construct
+        prompt_hjem_construct_r
+        zle && zle reset-prompt
+    else
+        functions[TRAPWINCH]="${functions[TRAPWINCH]//prompt_hjem_winch}"
+    fi
 }
 
 prompt_hjem_setup "$@"
