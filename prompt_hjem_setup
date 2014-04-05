@@ -60,7 +60,7 @@ function prompt_hjem_setup {
     add-zsh-hook precmd prompt_hjem_precmd
 }
 
-function prompt_hjem_construct {
+function prompt_hjem_construct_l {
     # calculate width
     local term_width=$((COLUMNS - 1))
     local prompt_1a_width=${#${(S%%)prompt_hjem_1a//(\%([KF1]|)\{*\}|\%[Bbkf])}}
@@ -87,17 +87,17 @@ function prompt_hjem_construct {
 
     # still to wide? truncate path...
     local prompt_pwd_size=$((term_width - 5))
-    setup_prompt "$prompt_pwd_size${prompt_hjem_clc1}${prompt_hjem_chyphen}${prompt_hjem_cop}%B%F{$prompt_hjem_color3}%$prompt_pwd_size<...<%~%<<%{$reset_color%}${prompt_hjem_ccp}" 1
+    setup_prompt "${prompt_hjem_clc1}${prompt_hjem_chyphen}${prompt_hjem_cop}%B%F{$prompt_hjem_color3}%$prompt_pwd_size<...<%~%<<%{$reset_color%}${prompt_hjem_ccp}" 1
 }
 
 function prompt_hjem_construct_r {
     RPROMPT=""
 
     # show git repo in RPROMPT
-    if [ -d .git ]; then
-        git_status=`git status 2> /dev/null`
+    git_status=`git status 2> /dev/null`
+    if [ -n "$git_status" ]; then
         git_status_p=`git status --porcelain 2>/dev/null`
-        git_stat=""
+        local git_stat=""
         # unstaged/untracked files
         [ $(echo $git_status_p | grep -E "^ M|^\?\?" | wc -l) != 0 ] && git_stat="${git_stat}?"
         # added/staged files
@@ -118,6 +118,11 @@ function prompt_hjem_construct_r {
     [[ $prompt_hjem_vimode == 1 ]] && RPROMPT="$RPROMPT%F{$prompt_hjem_color2}$VIMODE%{$reset_color%}"
 }
 
+function prompt_hjem_construct {
+    prompt_hjem_construct_l
+    prompt_hjem_construct_r
+}
+
 function prompt_hjem_precmd {
     # register for TRAPWINCH signal
     functions[TRAPWINCH]="${functions[TRAPWINCH]//prompt_hjem_winch} prompt_hjem_winch"
@@ -127,7 +132,6 @@ function prompt_hjem_precmd {
 
     # construct prompt
     prompt_hjem_construct
-    prompt_hjem_construct_r
 
     # send a visual bell
     echo -ne "\a"
@@ -144,7 +148,6 @@ function zle-keymap-select {
         VIMODE="${${KEYMAP/vicmd/[n]}/(main|viins)/[i]}"
         if [ $prompt_hjem_vimode == 1 ]; then
             prompt_hjem_construct
-            prompt_hjem_construct_r
             zle && zle reset-prompt
         fi
     else
@@ -158,7 +161,6 @@ function prompt_hjem_winch {
     # otherwise delete ourself from TRAPWINCH
     if [[ $precmd_functions = *prompt_hjem_precmd* ]]; then
         prompt_hjem_construct
-        prompt_hjem_construct_r
         zle && zle reset-prompt
     else
         functions[TRAPWINCH]="${functions[TRAPWINCH]//prompt_hjem_winch}"
