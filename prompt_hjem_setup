@@ -1,5 +1,5 @@
 prompt_hjem_help () {
-  cat <<'EOF'
+    cat <<'EOF'
 hjem [home is where my prompt is]
     usage: prompt hjem [8bit] [vimode] [<color1> [<color2> [<color3> [<color4> [<color5]]]]]
 
@@ -16,10 +16,16 @@ EOF
 
 function prompt_hjem_setup {
     if [[ $1 == '8bit' ]]; then
-        shift
-        prompt_hjem_hyphen='─'
-        prompt_hjem_lc1='╭'
-        prompt_hjem_lc2='╰'
+    shift
+    if [[ ${LC_ALL:-${LC_CTYPE:-$LANG}} = *UTF-8* ]]; then
+        prompt_hjem_lc1=$'\xe2\x94\x8c'
+        prompt_hjem_lc2=$'\xe2\x94\x94'
+        prompt_hjem_hyphen=$'\xe2\x94\x80'
+    else
+        prompt_hjem_lc1=$'\xc3'
+        prompt_hjem_lc2=$'\xc0'
+        prompt_hjem_hyphen=$'\xc4'
+    fi
     else
         prompt_hjem_hyphen='-'
         prompt_hjem_lc1=','
@@ -49,7 +55,7 @@ function prompt_hjem_setup {
     local path_p="${prompt_hjem_cop}%B%F{$prompt_hjem_color3}%~%{$reset_color%}${prompt_hjem_ccp}"
     local user_host="${prompt_hjem_cop}%F{$prompt_hjem_color4}%n%B@%b%F{$prompt_hjem_color4}%m%{$reset_color%}${prompt_hjem_ccp}"
     local smiley="${prompt_hjem_cop}%(?,%F{green}:%)%{$reset_color%},%F{red}:(%{$reset_color%})${prompt_hjem_ccp}"
-    local cur_cmd="${prompt_hjem_cop}%_${prompt_hjem_ccp}" 
+    local cur_cmd="${prompt_hjem_cop}%_${prompt_hjem_ccp}"
 
     prompt_hjem_1a="${prompt_hjem_clc1}${prompt_hjem_chyphen}${path_p}"
     prompt_hjem_1b="${user_host}"
@@ -95,6 +101,7 @@ function prompt_hjem_construct_r {
 
     # show git repo in RPROMPT
     git_status=`git status 2> /dev/null`
+    svn_status=`svn info 2> /dev/null`
     if [ -n "$git_status" ]; then
         git_status_p=`git status --porcelain 2>/dev/null`
         local git_stat=""
@@ -111,8 +118,11 @@ function prompt_hjem_construct_r {
         # put to prompt
         [ -z "$git_stat" ] && git_color="green" || git_color="red"
         local git_repo=$(git symbolic-ref HEAD 2> /dev/null | cut -b 12-)
-        RPROMPT="$RPROMPT%F{$git_color}[git${git_stat}:${git_repo}]%{$reset_color%}"
-    fi;
+        RPROMPT="$RPROMPT%F{$git_color}[git:${git_repo}${git_stat}]%{$reset_color%}"
+    elif [ -n "$svn_status" ]; then
+        local svn_repo=$(echo $svn_status | grep -e '^Repository Root:' | sed -e 's#.*/##')
+        RPROMPT="$RPROMPT%F{yellow}[svn:${svn_repo}]%{$reset_color%}"
+    fi
 
     # add VIMODE to RPROMPT
     [[ $prompt_hjem_vimode == 1 ]] && RPROMPT="$RPROMPT%F{$prompt_hjem_color2}$VIMODE%{$reset_color%}"
