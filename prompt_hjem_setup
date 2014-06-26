@@ -7,7 +7,7 @@ hjem [home is where my prompt is]
         vimode: show vi mode
 
         color1: hyphens (default: green)
-        color2: brackets (default: blue)
+        color2: brackets (default: green)
         color3: working directory (default: yellow)
         color4: user@host (default: cyan)
         color5: user input (default: white)
@@ -37,7 +37,7 @@ function prompt_hjem_setup {
     fi
 
     prompt_hjem_color1=${1:-'green'}                            # hyphens
-    prompt_hjem_color2=${2:-'blue'}                             # brackets
+    prompt_hjem_color2=${2:-'green'}                            # brackets
     prompt_hjem_color3=${3:-'yellow'}                           # working directory
     prompt_hjem_color4=${4:-${${SSH_CLIENT+'yellow'}:-'cyan'}}  # user@host
     prompt_hjem_color5=${5:-'white'}                            # user input
@@ -45,18 +45,17 @@ function prompt_hjem_setup {
     prompt_hjem_chyphen="%F{$prompt_hjem_color1}${prompt_hjem_hyphen}%{$reset_color%}"
     prompt_hjem_clc1="%B%F{$prompt_hjem_color1}${prompt_hjem_lc1}%{$reset_color%}"
     prompt_hjem_clc2="%B%F{$prompt_hjem_color1}${prompt_hjem_lc2}%{$reset_color%}"
-    prompt_hjem_cop="%F{$prompt_hjem_color2}(%{$reset_color%}"
-    prompt_hjem_ccp="%F{$prompt_hjem_color2})%{$reset_color%}"
+    prompt_hjem_cop="%F{$prompt_hjem_color2}<%{$reset_color%}"
+    prompt_hjem_ccp="%F{$prompt_hjem_color2}>%{$reset_color%}"
 
-    local path_p="%F{$prompt_hjem_color1}<%F{$prompt_hjem_color3}%B%~%b%F{$prompt_hjem_color1}>%{$reset_color%}"
-    local user_host="%F{$prompt_hjem_color1}<%F{$prompt_hjem_color4}%n%B@%m%b%F{$prompt_hjem_color1}>%{$reset_color%}"
+    local path_p="${prompt_hjem_cop}%F{$prompt_hjem_color3}%B%~%b${prompt_hjem_ccp}"
+    local user_host="${prompt_hjem_ccp}%F{$prompt_hjem_color4}%n%B@%m%b${prompt_hjem_ccp}"
     local success="%(?,${prompt_hjem_hyphen}${prompt_hjem_arrow},%F{red}${prompt_hjem_hyphen}${prompt_hjem_arrow}%{$reset_color%})"
-    local cur_cmd="${prompt_hjem_cop}%_${prompt_hjem_ccp}"
 
     prompt_hjem_1a="${prompt_hjem_clc1}${prompt_hjem_chyphen}${path_p}"
     prompt_hjem_1b="${user_host}"
     prompt_hjem_2="${prompt_hjem_clc2}${success} "
-    PROMPT2=" ${prompt_hjem_chyphen}${cur_cmd}${prompt_hjem_arrow}"
+    PROMPT2="   [%_]${prompt_hjem_hyphen}${prompt_hjem_arrow} "
 
     prompt_opts=(cr subst percent)
     add-zsh-hook precmd prompt_hjem_precmd
