@@ -16,16 +16,16 @@ EOF
 
 function prompt_hjem_setup {
     if [[ $1 == '8bit' ]]; then
-    shift
-    if [[ ${LC_ALL:-${LC_CTYPE:-$LANG}} = *UTF-8* ]]; then
-        prompt_hjem_lc1=$'\xe2\x94\x8c'
-        prompt_hjem_lc2=$'\xe2\x94\x94'
-        prompt_hjem_hyphen=$'\xe2\x94\x80'
-    else
-        prompt_hjem_lc1=$'\xc3'
-        prompt_hjem_lc2=$'\xc0'
-        prompt_hjem_hyphen=$'\xc4'
-    fi
+        shift
+        if [[ ${LC_ALL:-${LC_CTYPE:-$LANG}} = *UTF-8* ]]; then
+            prompt_hjem_lc1=$'\xe2\x94\x8c'
+            prompt_hjem_lc2=$'\xe2\x94\x94'
+            prompt_hjem_hyphen=$'\xe2\x94\x80'
+        else
+            prompt_hjem_lc1=$'\xc3'
+            prompt_hjem_lc2=$'\xc0'
+            prompt_hjem_hyphen=$'\xc4'
+        fi
     else
         prompt_hjem_hyphen='-'
         prompt_hjem_lc1=','
@@ -149,7 +149,7 @@ function zle-keymap-select {
     if [[ $precmd_functions = *prompt_hjem_precmd* ]]; then
         VIMODE="${${KEYMAP/vicmd/[n]}/(main|viins)/[i]}"
         if [ $prompt_hjem_vimode == 1 ]; then
-            prompt_hjem_construct_r
+            prompt_hjem_construct
             zle && zle reset-prompt
         fi
     else
@@ -162,7 +162,7 @@ function prompt_hjem_winch {
     # only update if still using our precmd,
     # otherwise delete ourself from TRAPWINCH
     if [[ $precmd_functions = *prompt_hjem_precmd* ]]; then
-        prompt_hjem_construct_l
+        prompt_hjem_construct
         zle && zle reset-prompt
     else
         functions[TRAPWINCH]="${functions[TRAPWINCH]//prompt_hjem_winch}"
