@@ -53,8 +53,8 @@ function prompt_hjem_setup {
     prompt_hjem_cop="%F{$prompt_hjem_color2}(%{$reset_color%}"
     prompt_hjem_ccp="%F{$prompt_hjem_color2})%{$reset_color%}"
 
-    local path_p="<%B%F{$prompt_hjem_color3}%~%F{$prompt_hjem_color1}>"
-    local user_host="<%F{$prompt_hjem_color4}%n%B@%F{$prompt_hjem_color4}%m%F{$prompt_hjem_color1}>"
+    local path_p="%F{$prompt_hjem_color1}<%F{$prompt_hjem_color3}%B%~%b%F{$prompt_hjem_color1}>%{$reset_color%}"
+    local user_host="%F{$prompt_hjem_color1}<%F{$prompt_hjem_color4}%n%B@%m%b%F{$prompt_hjem_color1}>%{$reset_color%}"
     local success="%(?,${prompt_hjem_hyphen}${prompt_hjem_arrow},%F{red}${prompt_hjem_hyphen}${prompt_hjem_arrow}%{$reset_color%})"
     local cur_cmd="${prompt_hjem_cop}%_${prompt_hjem_ccp}"
 
