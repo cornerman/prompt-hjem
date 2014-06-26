@@ -88,7 +88,8 @@ function prompt_hjem_construct_l {
 
     # still to wide? truncate path...
     local prompt_pwd_size=$((term_width - 5))
-    setup_prompt "${prompt_hjem_clc1}${prompt_hjem_chyphen}${prompt_hjem_cop}%B%F{$prompt_hjem_color3}%$prompt_pwd_size<...<%~%<<%{$reset_color%}${prompt_hjem_ccp}" 1
+    setup_prompt "${prompt_hjem_clc1}${prompt_hjem_chyphen}${prompt_hjem_cop}%B%F{$prompt_hjem_color3}%$prompt_pwd_size<…<%~%<<%{$reset_color%}${prompt_hjem_ccp}" 1
+    #setup_prompt "${prompt_hjem_clc1}${prompt_hjem_chyphen}${prompt_hjem_cop}%B%F{$prompt_hjem_color3}%$prompt_pwd_size<...<%~%<<%{$reset_color%}${prompt_hjem_ccp}" 1
 }
 
 function prompt_hjem_construct_r {
