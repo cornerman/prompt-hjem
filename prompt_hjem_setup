@@ -105,16 +105,8 @@ function prompt_hjem_construct_r {
     if [ -n "$git_status" ]; then
         git_status_p=`git status --porcelain 2>/dev/null`
         local git_stat=""
-        # unstaged/untracked files
-        [ $(echo $git_status_p | grep -E "^ M|^\?\?" | wc -l) != 0 ] && git_stat="${git_stat}?"
-        # added/staged files
-        [ $(echo $git_status_p | grep -E "^A|^M" | wc -l) != 0 ] && git_stat="${git_stat}!"
-        # commits to push
-        [ -n "$(echo $git_status | head -n 2 | tail -n 1 | grep '^Your branch is ahead')" ] && git_stat="${git_stat}>"
-        # commits to pull
-        [ -n "$(echo $git_status | head -n 2 | tail -n 1 | grep '^Your branch is behind')" ] && git_stat="${git_stat}<"
-        # diverged repos
-        [ -n "$(echo $git_status | head -n 2 | tail -n 1 | grep 'have diverged,$')" ] && git_stat="${git_stat}><"
+        # unstaged/untracked/added/staged files
+        [ $(echo $git_status_p | grep -E "^ M|^\?\?|^A|^M" | wc -l) != 0 ] && git_stat="*"
         # put to prompt
         [ -z "$git_stat" ] && git_color="green" || git_color="red"
         local git_repo=$(git symbolic-ref HEAD 2> /dev/null | cut -b 12-)
@@ -157,7 +149,7 @@ function zle-keymap-select {
     if [[ $precmd_functions = *prompt_hjem_precmd* ]]; then
         VIMODE="${${KEYMAP/vicmd/[n]}/(main|viins)/[i]}"
         if [ $prompt_hjem_vimode == 1 ]; then
-            prompt_hjem_construct
+            prompt_hjem_construct_r
             zle && zle reset-prompt
         fi
     else
@@ -170,7 +162,7 @@ function prompt_hjem_winch {
     # only update if still using our precmd,
     # otherwise delete ourself from TRAPWINCH
     if [[ $precmd_functions = *prompt_hjem_precmd* ]]; then
-        prompt_hjem_construct
+        prompt_hjem_construct_l
         zle && zle reset-prompt
     else
         functions[TRAPWINCH]="${functions[TRAPWINCH]//prompt_hjem_winch}"
