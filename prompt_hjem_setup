@@ -36,6 +36,13 @@ function prompt_hjem_setup {
         prompt_hjem_vimode=0
     fi
 
+    # set reset_color if not defined
+    if [[ -z $reset_color ]]; then
+        local lc=$'\e[' rc=m
+        typeset -Hg reset_color
+        reset_color="$lc${color[0]}$rc" 
+    fi
+
     prompt_hjem_color1=${1:-'green'}                            # hyphens
     prompt_hjem_color2=${2:-'green'}                            # brackets
     prompt_hjem_color3=${3:-'yellow'}                           # working directory
