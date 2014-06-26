@@ -152,7 +152,7 @@ function zle-keymap-select {
     # otherwise remove keymap binding
     if [[ $precmd_functions = *prompt_hjem_precmd* ]]; then
         VIMODE="${${KEYMAP/vicmd/[n]}/(main|viins)/[i]}"
-        if [ $prompt_hjem_vimode == 1 ]; then
+        if [[ $prompt_hjem_vimode == 1 ]]; then
             prompt_hjem_construct_r
             zle && zle reset-prompt
         fi
