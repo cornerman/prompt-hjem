@@ -31,7 +31,7 @@ function prompt_hjem_setup {
     if [[ $1 == 'vimode' ]]; then
         shift
         prompt_hjem_vimode=1
-        zle -N zle-keymap-select 2> /dev/null
+        zle -N zle-keymap-select > /dev/null 2>&1
     else
         prompt_hjem_vimode=0
     fi
@@ -156,7 +156,7 @@ function zle-keymap-select {
             zle && zle reset-prompt
         fi
     else
-        zle -D zle-keymap-select 2> /dev/null
+        zle -D zle-keymap-select > /dev/null 2>&1
     fi
 }
 
