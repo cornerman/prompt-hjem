@@ -31,7 +31,7 @@ function prompt_hjem_setup {
     if [[ $1 == 'vimode' ]]; then
         shift
         prompt_hjem_vimode=1
-        zle -N zle-keymap-select > /dev/null 2>&1
+        zle -N zle-keymap-select
     else
         prompt_hjem_vimode=0
     fi
@@ -40,7 +40,7 @@ function prompt_hjem_setup {
     if [[ -z $reset_color ]]; then
         local lc=$'\e[' rc=m
         typeset -Hg reset_color
-        reset_color="$lc${color[0]}$rc" 
+        reset_color="$lc${color[0]}$rc"
     fi
 
     prompt_hjem_color1=${1:-'green'}                            # hyphens
@@ -156,7 +156,7 @@ function zle-keymap-select {
             zle && zle reset-prompt
         fi
     else
-        zle -D zle-keymap-select > /dev/null 2>&1
+        zle -D zle-keymap-select
     fi
 }
 
