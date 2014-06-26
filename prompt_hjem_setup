@@ -16,16 +16,17 @@ EOF
 
 function prompt_hjem_setup {
     if [[ $1 == '8bit' ]]; then
-        shift
-        if [[ ${LC_ALL:-${LC_CTYPE:-$LANG}} = *UTF-8* ]]; then
-            prompt_hjem_lc1=$'\xe2\x94\x8c'
-            prompt_hjem_lc2=$'\xe2\x94\x94'
-            prompt_hjem_hyphen=$'\xe2\x94\x80'
-        else
-            prompt_hjem_lc1=$'\xc3'
-            prompt_hjem_lc2=$'\xc0'
-            prompt_hjem_hyphen=$'\xc4'
-        fi
+    shift
+    if [[ ${LC_ALL:-${LC_CTYPE:-$LANG}} = *UTF-8* ]]; then
+        prompt_hjem_lc1=$'╭'
+        prompt_hjem_lc2=$'╰'
+        prompt_hjem_hyphen=$'─'
+	prompt_hjem_arrow=$'➤'
+    else
+        prompt_hjem_lc1=$'\xc3'
+        prompt_hjem_lc2=$'\xc0'
+        prompt_hjem_hyphen=$'\xc4'
+    fi
     else
         prompt_hjem_hyphen='-'
         prompt_hjem_lc1=','
@@ -49,17 +50,17 @@ function prompt_hjem_setup {
     prompt_hjem_chyphen="%F{$prompt_hjem_color1}${prompt_hjem_hyphen}%{$reset_color%}"
     prompt_hjem_clc1="%B%F{$prompt_hjem_color1}${prompt_hjem_lc1}%{$reset_color%}"
     prompt_hjem_clc2="%B%F{$prompt_hjem_color1}${prompt_hjem_lc2}%{$reset_color%}"
-    prompt_hjem_cop="%F{$prompt_hjem_color2}[%{$reset_color%}"
-    prompt_hjem_ccp="%F{$prompt_hjem_color2}]%{$reset_color%}"
+    prompt_hjem_cop="%F{$prompt_hjem_color2}(%{$reset_color%}"
+    prompt_hjem_ccp="%F{$prompt_hjem_color2})%{$reset_color%}"
 
-    local path_p="${prompt_hjem_cop}%B%F{$prompt_hjem_color3}%~%{$reset_color%}${prompt_hjem_ccp}"
-    local user_host="${prompt_hjem_cop}%F{$prompt_hjem_color4}%n%B@%b%F{$prompt_hjem_color4}%m%{$reset_color%}${prompt_hjem_ccp}"
-    local smiley="${prompt_hjem_cop}%(?,%F{green}:%)%{$reset_color%},%F{red}:(%{$reset_color%})${prompt_hjem_ccp}"
+    local path_p="<%B%F{$prompt_hjem_color3}%~%F{$prompt_hjem_color1}>"
+    local user_host="<%F{$prompt_hjem_color4}%n%B@%F{$prompt_hjem_color4}%m%F{$prompt_hjem_color1}>"
+    local success="%(?,${prompt_hjem_hyphen}${prompt_hjem_arrow},%F{red}${prompt_hjem_hyphen}${prompt_hjem_arrow}%{$reset_color%})"
     local cur_cmd="${prompt_hjem_cop}%_${prompt_hjem_ccp}"
 
     prompt_hjem_1a="${prompt_hjem_clc1}${prompt_hjem_chyphen}${path_p}"
     prompt_hjem_1b="${user_host}"
-    prompt_hjem_2="${prompt_hjem_clc2}${prompt_hjem_chyphen}${smiley} %# "
+    prompt_hjem_2="${prompt_hjem_clc2}${success} "
     PROMPT2=" ${prompt_hjem_chyphen}${cur_cmd}> "
 
     prompt_opts=(cr subst percent)
@@ -149,7 +150,7 @@ function zle-keymap-select {
     if [[ $precmd_functions = *prompt_hjem_precmd* ]]; then
         VIMODE="${${KEYMAP/vicmd/[n]}/(main|viins)/[i]}"
         if [ $prompt_hjem_vimode == 1 ]; then
-            prompt_hjem_construct
+            prompt_hjem_construct_r
             zle && zle reset-prompt
         fi
     else
@@ -162,7 +163,7 @@ function prompt_hjem_winch {
     # only update if still using our precmd,
     # otherwise delete ourself from TRAPWINCH
     if [[ $precmd_functions = *prompt_hjem_precmd* ]]; then
-        prompt_hjem_construct
+        prompt_hjem_construct_l
         zle && zle reset-prompt
     else
         functions[TRAPWINCH]="${functions[TRAPWINCH]//prompt_hjem_winch}"
