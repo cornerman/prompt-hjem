@@ -50,8 +50,8 @@ function prompt_hjem_setup {
     prompt_hjem_color5=${5:-'white'}                            # user input
 
     prompt_hjem_chyphen="%F{$prompt_hjem_color1}${prompt_hjem_hyphen}%{$reset_color%}"
-    prompt_hjem_clc1="%B%F{$prompt_hjem_color1}${prompt_hjem_lc1}%{$reset_color%}"
-    prompt_hjem_clc2="%B%F{$prompt_hjem_color1}${prompt_hjem_lc2}%{$reset_color%}"
+    prompt_hjem_clc1="%F{$prompt_hjem_color1}${prompt_hjem_lc1}%{$reset_color%}"
+    prompt_hjem_clc2="%F{$prompt_hjem_color1}${prompt_hjem_lc2}%{$reset_color%}"
     prompt_hjem_cop="%F{$prompt_hjem_color2}<%{$reset_color%}"
     prompt_hjem_ccp="%F{$prompt_hjem_color2}>%{$reset_color%}"
 
