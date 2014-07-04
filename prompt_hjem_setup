@@ -66,6 +66,8 @@ function prompt_hjem_setup {
     prompt_hjem_2="${prompt_hjem_clc2}${success} "
     PROMPT2="   [%_]${prompt_hjem_hyphen}${prompt_hjem_arrow} "
 
+    prompt_newline=$'%1(l.\n.)'
+
     prompt_opts=(cr subst percent)
     add-zsh-hook precmd prompt_hjem_precmd
 }
