@@ -106,20 +106,15 @@ function prompt_hjem_construct_r {
     RPROMPT=""
 
     # show git repo in RPROMPT
-    git_status=`git status 2> /dev/null`
-    svn_status=`svn info 2> /dev/null`
-    if [ -n "$git_status" ]; then
-        git_status_p=`git status --porcelain 2>/dev/null`
+    git_status=`git status --porcelain 2>/dev/null`
+    if [[ $? == 0 ]]; then
         local git_stat=""
         # unstaged/untracked/added/staged files
-        [ $(echo $git_status_p | grep -E "^ M|^\?\?|^A|^M" | wc -l) != 0 ] && git_stat="*"
+        [ $(echo $git_status | grep -E "^ M|^\?\?|^A|^M" | wc -l) != 0 ] && git_stat="*"
         # put to prompt
         [ -z "$git_stat" ] && git_color="green" || git_color="red"
         local git_repo=$(git symbolic-ref HEAD 2> /dev/null | cut -b 12-)
         RPROMPT="$RPROMPT%F{$git_color}[git:${git_repo}${git_stat}]%{$reset_color%}"
-    elif [ -n "$svn_status" ]; then
-        local svn_repo=$(echo $svn_status | grep -e '^Repository Root:' | sed -e 's#.*/##')
-        RPROMPT="$RPROMPT%F{yellow}[svn:${svn_repo}]%{$reset_color%}"
     fi
 
     # add VIMODE to RPROMPT
