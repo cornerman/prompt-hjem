@@ -1,7 +1,7 @@
 prompt_hjem_help () {
     cat <<'EOF'
 hjem [home is where my prompt is]
-    usage: prompt hjem [8bit] [vimode] [<color1> [<color2> [<color3> [<color4> [<color5]]]]]
+    usage: prompt hjem [8bit] [vimode] [<color1> [<color2> [<color3> [<color4>]]]]
 
         8bit: use 8bit chars
         vimode: show vi mode
@@ -10,7 +10,6 @@ hjem [home is where my prompt is]
         color2: brackets (default: green)
         color3: working directory (default: yellow)
         color4: user@host (default: cyan)
-        color5: user input (default: white)
 EOF
 }
 
@@ -49,7 +48,6 @@ function prompt_hjem_setup {
     prompt_hjem_color2=${2:-'green'}                            # brackets
     prompt_hjem_color3=${3:-'yellow'}                           # working directory
     prompt_hjem_color4=${4:-${${SSH_CLIENT+'yellow'}:-'cyan'}}  # user@host
-    prompt_hjem_color5=${5:-'white'}                            # user input
 
     prompt_hjem_chyphen="%F{$prompt_hjem_color1}${prompt_hjem_hyphen}%{$reset_color%}"
     prompt_hjem_clc1="%F{$prompt_hjem_color1}${prompt_hjem_lc1}%{$reset_color%}"
@@ -140,7 +138,7 @@ function prompt_hjem_precmd {
     echo -ne "\a"
 
     # set fg color
-    zle_highlight[(r)default:*]="default:fg=$prompt_hjem_color5,bold"
+    zle_highlight[(r)default:*]="default:fg=bold"
 }
 
 # update vimode on keymap change
