@@ -134,9 +134,6 @@ function prompt_hjem_precmd {
     # construct prompt
     prompt_hjem_construct
 
-    # send a visual bell
-    echo -ne "\a"
-
     # set fg color
     zle_highlight[(r)default:*]="default:fg=bold"
 }
