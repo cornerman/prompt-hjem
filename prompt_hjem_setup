@@ -129,7 +129,7 @@ function prompt_hjem_precmd {
     functions[TRAPWINCH]="${functions[TRAPWINCH]//prompt_hjem_winch} prompt_hjem_winch"
 
     # init vi mode
-    VIMODE="[i]"
+    VIMODE="%{$bg[green]%}%{$fg[white]%}%B I %{$reset_color%}"
 
     # construct prompt
     prompt_hjem_construct
@@ -143,7 +143,12 @@ function zle-keymap-select {
     # only update if still using our precmd,
     # otherwise remove keymap binding
     if [[ $precmd_functions = *prompt_hjem_precmd* ]]; then
-        VIMODE="${${KEYMAP/vicmd/[n]}/(main|viins)/[i]}"
+        case $KEYMAP in
+            main|viins  ) VIMODE="%{$bg[green]%}%{$fg[white]%}%B I %{$reset_color%}" ;;
+            vicmd       ) VIMODE="%{$bg[blue]%}%{$fg[white]%}%B N %{$reset_color%}" ;;
+            vivis|vivli ) VIMODE="%{$bg[magenta]%}%{$fg[white]%}%B V %{$reset_color%}" ;;
+            virep       ) VIMODE="%{$bg[red]%}%{$fg[white]%}%B R %{$reset_color%}" ;;
+        esac
         if [[ $prompt_hjem_vimode == 1 ]]; then
             prompt_hjem_construct_r
             zle && zle reset-prompt
