@@ -11,3 +11,7 @@ enable it in your `~/.zshrc`:
 autoload promptinit && promptinit
 prompt hjem 8bit vimode
 ```
+
+# Screenshot
+
+![Screenshot](screenshot.png)
