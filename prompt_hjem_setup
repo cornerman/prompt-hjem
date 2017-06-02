@@ -14,7 +14,7 @@ EOF
 }
 
 function prompt_hjem_setup {
-    if [[ $1 == '8bit' ]] && [[ ${LC_ALL:-${LC_CTYPE:-$LANG}} = *UTF-8* ]]; then
+    if [[ $1 == '8bit' ]]; then
         shift
         prompt_hjem_lc1='╭'
         prompt_hjem_lc2='╰'
