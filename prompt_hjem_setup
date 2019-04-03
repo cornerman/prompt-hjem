@@ -80,9 +80,9 @@ function prompt_hjem_construct_l {
     function setup_prompt {
         padding=$(printf "${prompt_hjem_hyphen}%.0s" {1..$2})
 
-        # show git repo in RPROMPT
-        git_status=`git status --porcelain 2>/dev/null`
+        # show git repo in PROMPT
         git_prompt=''
+        git_status=`git status --porcelain 2>/dev/null`
         if [[ $? == 0 ]]; then
             local git_stat=""
             # unstaged/untracked/added/staged files
