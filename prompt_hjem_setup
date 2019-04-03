@@ -61,7 +61,8 @@ function prompt_hjem_setup {
 
     prompt_hjem_1a="${prompt_hjem_clc1}${prompt_hjem_chyphen}${path_p}"
     prompt_hjem_1b="${user_host}"
-    prompt_hjem_2="${prompt_hjem_clc2}${success} "
+    prompt_hjem_2a="${prompt_hjem_clc2}${prompt_hjem_chyphen}"
+    prompt_hjem_2b="${success} "
     PROMPT2="   [%_]${prompt_hjem_hyphen}${prompt_hjem_arrow} "
 
     prompt_newline=$'%1(l.\n.)'
@@ -78,7 +79,21 @@ function prompt_hjem_construct_l {
 
     function setup_prompt {
         padding=$(printf "${prompt_hjem_hyphen}%.0s" {1..$2})
-        PROMPT="$1%F{$prompt_hjem_color1}$padding%{$reset_color%}$3${prompt_newline}$prompt_hjem_2"
+
+        # show git repo in RPROMPT
+        git_status=`git status --porcelain 2>/dev/null`
+        git_prompt=''
+        if [[ $? == 0 ]]; then
+            local git_stat=""
+            # unstaged/untracked/added/staged files
+            [ $(echo $git_status | grep -E "^ M|^\?\?|^A|^M" | wc -l) != 0 ] && git_stat="*"
+            # put to prompt
+            [ -z "$git_stat" ] && git_color="green" || git_color="red"
+            local git_repo=$(git symbolic-ref HEAD 2> /dev/null | cut -b 12-)
+            git_prompt="%F{$git_color}[${git_repo}${git_stat}]%{$reset_color%}"
+        fi
+
+        PROMPT="$1%F{$prompt_hjem_color1}$padding%{$reset_color%}$3${prompt_newline}$prompt_hjem_2a$git_prompt$prompt_hjem_2b"
     }
 
     # add padding and check width
@@ -102,18 +117,6 @@ function prompt_hjem_construct_l {
 
 function prompt_hjem_construct_r {
     RPROMPT=""
-
-    # show git repo in RPROMPT
-    git_status=`git status --porcelain 2>/dev/null`
-    if [[ $? == 0 ]]; then
-        local git_stat=""
-        # unstaged/untracked/added/staged files
-        [ $(echo $git_status | grep -E "^ M|^\?\?|^A|^M" | wc -l) != 0 ] && git_stat="*"
-        # put to prompt
-        [ -z "$git_stat" ] && git_color="green" || git_color="red"
-        local git_repo=$(git symbolic-ref HEAD 2> /dev/null | cut -b 12-)
-        RPROMPT="$RPROMPT%F{$git_color}[git:${git_repo}${git_stat}]%{$reset_color%}"
-    fi
 
     # add VIMODE to RPROMPT
     [[ $prompt_hjem_vimode == 1 ]] && RPROMPT="$RPROMPT%F{$prompt_hjem_color2}$VIMODE%{$reset_color%}"
